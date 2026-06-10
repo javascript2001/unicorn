@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Verified</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(-45deg,#00c853,#00e676,#00bfa5,#1de9b6);
+    background-size:400% 400%;
+    animation:bgMove 10s ease infinite;
+    overflow:hidden;
+    padding:20px;
+}
+
+@keyframes bgMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+.card{
+    width:100%;
+    max-width:500px;
+    background:rgba(255,255,255,.12);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:30px;
+    padding:50px 35px;
+    text-align:center;
+    color:white;
+    box-shadow:0 25px 60px rgba(0,0,0,.25);
+    animation:cardIn .8s ease;
+}
+
+@keyframes cardIn{
+    from{
+        opacity:0;
+        transform:translateY(40px) scale(.9);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
+.success-icon{
+    width:120px;
+    height:120px;
+    margin:auto;
+    border-radius:50%;
+    background:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(255,255,255,.6);}
+    70%{box-shadow:0 0 0 30px rgba(255,255,255,0);}
+    100%{box-shadow:0 0 0 0 rgba(255,255,255,0);}
+}
+
+.check{
+    font-size:60px;
+    color:#00c853;
+    font-weight:700;
+}
+
+h1{
+    margin-top:30px;
+    font-size:2rem;
+}
+
+p{
+    margin-top:15px;
+    line-height:1.7;
+    opacity:.95;
+}
+
+.btn{
+    display:inline-block;
+    margin-top:30px;
+    text-decoration:none;
+    color:#00c853;
+    background:white;
+    padding:14px 32px;
+    border-radius:999px;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn:hover{
+    transform:translateY(-3px);
+}
+
+.floating{
+    position:absolute;
+    border-radius:50%;
+    background:rgba(255,255,255,.15);
+}
+
+.f1{
+    width:250px;
+    height:250px;
+    top:-70px;
+    left:-70px;
+}
+
+.f2{
+    width:300px;
+    height:300px;
+    bottom:-100px;
+    right:-100px;
+}
+
+@media(max-width:600px){
+    .card{
+        padding:40px 25px;
+    }
+
+    h1{
+        font-size:1.7rem;
+    }
+
+    .success-icon{
+        width:100px;
+        height:100px;
+    }
+
+    .check{
+        font-size:50px;
+    }
+}
+.countdown-wrapper{
+    position:relative;
+    width:120px;
+    height:120px;
+    margin:25px auto;
+}
+
+.countdown-content{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    color:white;
+}
+
+.countdown-content span{
+    font-size:2rem;
+    font-weight:700;
+    line-height:1;
+}
+
+.countdown-content small{
+    opacity:.85;
+}
+
+.progress-ring{
+    transform:rotate(-90deg);
+}
+
+.progress-bg{
+    fill:none;
+    stroke:rgba(255,255,255,.2);
+    stroke-width:8;
+}
+
+.progress-circle{
+    fill:none;
+    stroke:#ffffff;
+    stroke-width:8;
+    stroke-linecap:round;
+    stroke-dasharray:314;
+    stroke-dashoffset:0;
+    transition:stroke-dashoffset 1s linear;
+}
+
+.redirect-text{
+    margin-top:10px;
+    opacity:.95;
+    font-size:.95rem;
+}
+
+.btn{
+    display:inline-block;
+    margin-top:25px;
+    background:white;
+    color:#00c853;
+    padding:14px 32px;
+    border-radius:999px;
+    text-decoration:none;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn:hover{
+    transform:translateY(-3px);
+}
+</style>
+</head>
+<body>
+
+<div class="floating f1"></div>
+<div class="floating f2"></div>
+
+<div class="card">
+    <div class="success-icon">
+        <div class="check">✓</div>
+    </div>
+
+    <h1>Email Verified!</h1>
+
+    <p>
+        Your account has been successfully verified.
+        You can now access all features and continue using the platform.
+    </p>
+
+<div class="countdown-wrapper">
+    <svg class="progress-ring" width="120" height="120">
+        <circle
+            class="progress-bg"
+            cx="60"
+            cy="60"
+            r="50"
+        />
+        <circle
+            id="progressCircle"
+            class="progress-circle"
+            cx="60"
+            cy="60"
+            r="50"
+        />
+    </svg>
+
+    <div class="countdown-content">
+        <span id="counter">5</span>
+        <small>seconds</small>
+    </div>
+</div>
+
+<p class="redirect-text">
+    Redirecting you to login automatically...
+</p>
+
+<a href="/login" class="btn">
+    Continue to Login →
+</a>
+</div>
+
+
+<script>
+let seconds = 5;
+
+const counter = document.getElementById('counter');
+const circle = document.getElementById('progressCircle');
+
+const circumference = 314;
+
+const timer = setInterval(() => {
+    seconds--;
+
+    if(seconds >= 0){
+        counter.textContent = seconds;
+
+        const progress =
+            circumference -
+            ((5 - seconds) / 5) * circumference;
+
+        circle.style.strokeDashoffset = progress;
+    }
+
+    if(seconds <= 0){
+        clearInterval(timer);
+
+        window.location.href = "/login";
+    }
+}, 1000);
+</script>
+
+</body>
+</html>
