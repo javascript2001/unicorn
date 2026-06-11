@@ -47,6 +47,8 @@ model User {
   mood      MOOD
   isVerified Boolean  @default(false)
   isBanned    Boolean  @default(false)
+  profilePictureUrl String?
+  profilePictureThumbnailUrl String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
