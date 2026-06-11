@@ -202,4 +202,13 @@ const resend_verification_controller = async (req, res) => {
     }
 }
 
-export { register_controller, login_controller, verify_controller, resend_verification_controller };
+const logout_controller = async (req,res) => {
+    res.clearCookie('token');
+    res.status(200).json({
+        success: true,
+        message: "Logout succefully"
+    })
+
+}
+
+export { register_controller, login_controller, verify_controller, resend_verification_controller, logout_controller };
