@@ -7,12 +7,14 @@ const settings_schema = z.object({
     username:   z.string().min(3).optional(),
     dob:        z.string().optional(),
     mobile:     z.string().optional(),
-    linkedIn:   z.string().url().optional(),
-    github:     z.string().url().optional(),
-    portfolio:  z.string().url().optional(),
-    skills:     z.array(z.string()).optional(),
-    experience: z.enum(['JUNIOR', 'MID_LEVEL', 'SENIOR', 'EXPERT']).optional(),
-    mood:       z.enum(['PART_TIME', 'FULL_TIME', 'FREELANCE']).optional(),
+    linkedIn:    z.string().url().optional(),
+    github:      z.string().url().optional(),
+    portfolio:   z.string().url().optional(),
+    discord:     z.string().optional(),
+    coreSkills:  z.array(z.string()).optional(),
+    stackSkills: z.array(z.string()).optional(),
+    experience:  z.enum(['JUNIOR', 'MID_LEVEL', 'SENIOR', 'EXPERT']).optional(),
+    mood:        z.enum(['PART_TIME', 'FULL_TIME', 'FREELANCE']).optional(),
 });
 
 const update_profile_controller = async (req, res) => {

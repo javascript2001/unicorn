@@ -7,6 +7,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import {authRouter} from './routes/auth.route.js'
 import {settingsRouter} from './routes/settings.route.js'
+import {dashboardRouter} from './routes/dashboard.route.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +28,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // API routes
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/settings', settingsRouter);
+app.use('/api/v1/dashboard', dashboardRouter);
 
 // SPA fallback — serve index.html for all non-API routes
 app.get('/:catchAll', (req, res) => {

@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Unicorn</title>
+<meta name="description" content="Discover and connect with developers on Unicorn — the real-time tech talent platform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ──────────────────────────────── Reset & Root ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:          #0b0b12;
+  --surface:     #13131d;
+  --surface-2:   #1a1a28;
+  --border:      rgba(255,255,255,0.07);
+  --border-2:    rgba(255,255,255,0.12);
+  --accent:      #e91e8c;
+  --accent-dim:  rgba(233,30,140,0.15);
+  --accent-glow: rgba(233,30,140,0.25);
+  --text:        #e4e4f0;
+  --text-2:      #8888a0;
+  --text-3:      #4a4a60;
+  --blue:        #5865f2;
+  --green:       #23d18b;
+  --radius:      14px;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ──────────────────────────────── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* ──────────────────────────────── Layout ── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ──────────────────────────────── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+  position: relative;
+}
+
+.logo {
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  filter: drop-shadow(0 0 12px rgba(233,30,140,0.5));
+  transition: filter 0.3s;
+}
+.logo:hover { filter: drop-shadow(0 0 20px rgba(233,30,140,0.8)); }
+
+.header-title {
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--text-2);
+  letter-spacing: 0.04em;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.header-title strong { color: var(--text); font-weight: 600; }
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-2);
+  transition: all 0.2s;
+  font-size: 14px;
+}
+.icon-btn:hover { border-color: var(--border-2); color: var(--text); background: var(--surface-2); }
+
+/* ──────────────────────────────── Main 3-col ── */
+main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 268px 1fr 320px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ──────────────────────────────── Filter Panel ── */
+.filter-panel {
+  padding: 18px 16px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  position: relative;
+  background: var(--bg);
+}
+
+/* pink glow border */
+.filter-panel::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(233,30,140,0.22);
+  border-radius: var(--radius);
+  pointer-events: none;
+  box-shadow: inset 0 0 30px rgba(233,30,140,0.04), 0 0 30px rgba(233,30,140,0.06);
+}
+
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  padding: 0 2px;
+}
+
+.filter-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.04em;
+}
+
+.search-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.search-btn:hover { color: var(--accent); }
+
+.filter-section { margin-bottom: 22px; }
+
+.filter-section-title {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 0 2px;
+}
+
+.chip {
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.75rem;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.18s;
+  line-height: 1.4;
+}
+.chip:hover {
+  border-color: rgba(233,30,140,0.4);
+  color: rgba(233,30,140,0.85);
+}
+.chip.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+  box-shadow: 0 0 10px rgba(233,30,140,0.15);
+}
+
+/* ──────────────────────────────── Globe Area ── */
+.globe-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #0f0f1e 0%, var(--bg) 70%);
+}
+
+canvas#stars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.globe-wrap {
+  position: relative;
+  z-index: 2;
+}
+
+.astronaut {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 38px;
+  line-height: 1;
+  animation: float 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 14px rgba(233,30,140,0.35));
+  z-index: 3;
+}
+
+@keyframes float {
+  0%,100% { transform: translateX(-50%) translateY(0) rotate(-5deg); }
+  50%      { transform: translateX(-50%) translateY(-14px) rotate(5deg); }
+}
+
+canvas#globe {
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(100,180,255,0.1), 0 0 60px rgba(30,90,255,0.25), 0 0 120px rgba(30,90,255,0.1);
+}
+
+.globe-label {
+  margin-top: 22px;
+  font-size: 0.72rem;
+  color: var(--text-3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+/* ──────────────────────────────── Cards Panel ── */
+.cards-panel {
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg);
+}
+
+/* ──────────────────────────────── Profile Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse at top left, rgba(233,30,140,0.05), transparent 60%);
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.card:hover {
+  border-color: rgba(233,30,140,0.3);
+  background: var(--surface-2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.card:hover::before { opacity: 1; }
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  color: var(--text-3);
+}
+
+.card-identity { flex: 1; min-width: 0; }
+
+.card-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-username {
+  font-size: 0.75rem;
+  color: var(--text-2);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-badges {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.status-dot.online  { background: var(--green); box-shadow: 0 0 6px rgba(35,209,139,0.6); }
+.status-dot.offline { background: var(--text-3); }
+
+.verified-icon {
+  color: var(--blue);
+  font-size: 13px;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.73rem;
+  color: var(--text-2);
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.meta-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-3);
+  flex-shrink: 0;
+}
+
+.meta-val {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 10px 0;
+}
+
+.card-section { margin-bottom: 10px; }
+
+.section-label {
+  font-size: 0.68rem;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.skill-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.skill-row-label {
+  font-size: 0.7rem;
+  color: var(--text-2);
+  min-width: 34px;
+  padding-top: 3px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-2);
+  font-size: 0.69rem;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.portfolio-link {
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.portfolio-link:hover { opacity: 1; }
+
+.socials {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.social-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  transition: transform 0.18s, opacity 0.18s;
+  opacity: 0.85;
+  color: #fff;
+  font-family: monospace;
+}
+.social-btn:hover { transform: translateY(-2px); opacity: 1; }
+.social-btn.gh  { background: #24292e; }
+.social-btn.li  { background: #0a66c2; }
+.social-btn.dc  { background: var(--blue); }
+.social-btn.ml  { background: #555; }
+
+/* ──────────────────────────────── Self avatar (bottom-left) ── */
+.self-avatar {
+  position: fixed;
+  bottom: 18px;
+  left: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  color: var(--text-2);
+}
+.self-avatar:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(233,30,140,0.3);
+}
+
+/* ──────────────────────────────── Skeleton loader ── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s infinite;
+  border-radius: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── Header ─────────────────────────── -->
+  <header>
+    <div class="logo" title="Unicorn">🦄</div>
+
+    <p class="header-title"><strong>Real-time</strong>&nbsp; tech connect</p>
+
+    <div class="header-actions">
+      <!-- monitor icon -->
+      <div class="icon-btn" title="Notifications" id="btn-notifications">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/>
+        </svg>
+      </div>
+      <!-- help icon -->
+      <div class="icon-btn" title="Help" id="btn-help">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Main 3-col ─────────────────────────── -->
+  <main>
+
+    <!-- ── Filter Panel ── -->
+    <aside class="filter-panel" id="filterPanel">
+
+      <div class="filter-header">
+        <span class="filter-label">Discover</span>
+        <button class="search-btn" title="Search" id="searchToggle">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mood -->
+      <div class="filter-section">
+        <div class="filter-section-title">Mood</div>
+        <div class="chips" data-group="mood">
+          <button class="chip active" data-val="FULL_TIME">Full-time</button>
+          <button class="chip active" data-val="PART_TIME">Part-time</button>
+          <button class="chip" data-val="FREELANCE">Freelance</button>
+        </div>
+      </div>
+
+      <!-- Core Skills (domain) -->
+      <div class="filter-section">
+        <div class="filter-section-title">Skills</div>
+        <div class="chips" data-group="coreSkills">
+          <button class="chip" data-val="Front end">Front end</button>
+          <button class="chip" data-val="Back end">Back end</button>
+          <button class="chip" data-val="Full stack">Full stack</button>
+          <button class="chip" data-val="iOS">iOS</button>
+          <button class="chip" data-val="Android">Android</button>
+          <button class="chip" data-val="DevOps">DevOps</button>
+          <button class="chip active" data-val="Cloud">Cloud</button>
+          <button class="chip" data-val="Cybersecurity">Cybersecurity</button>
+          <button class="chip" data-val="ML">ML</button>
+          <button class="chip" data-val="Data">Data</button>
+          <button class="chip" data-val="Game Dev">Game Dev</button>
+          <button class="chip" data-val="Embedded">Embedded</button>
+        </div>
+      </div>
+
+      <!-- Experience -->
+      <div class="filter-section">
+        <div class="filter-section-title">Experience</div>
+        <div class="chips" data-group="experience">
+          <button class="chip" data-val="JUNIOR">Junior</button>
+          <button class="chip" data-val="MID_LEVEL">Mid-level</button>
+          <button class="chip active" data-val="SENIOR">Senior</button>
+          <button class="chip" data-val="EXPERT">Expert</button>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ── Globe Center ── -->
+    <section class="globe-area">
+      <canvas id="stars"></canvas>
+
+      <div class="globe-wrap">
+        <div class="astronaut" title="👋">🧑‍🚀</div>
+        <canvas id="globe" width="260" height="260"></canvas>
+      </div>
+
+      <p class="globe-label">Connecting developers worldwide</p>
+    </section>
+
+    <!-- ── Cards Panel ── -->
+    <section class="cards-panel" id="cardsPanel">
+      <!-- Cards injected by JS -->
+    </section>
+
+  </main>
+</div>
+
+<!-- Self avatar -->
+<div class="self-avatar" id="selfAvatar" title="Your profile">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>
+</div>
+
+
+<script>
+/* ════════════════════════════════════════════
+   STARS BACKGROUND
+════════════════════════════════════════════ */
+(function initStars() {
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    const parent = canvas.parentElement;
+    canvas.width  = parent.clientWidth;
+    canvas.height = parent.clientHeight;
+    buildStars();
+  }
+
+  function buildStars() {
+    stars = [];
+    const count = Math.floor((canvas.width * canvas.height) / 4000);
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x:     Math.random() * canvas.width,
+        y:     Math.random() * canvas.height,
+        r:     Math.random() * 1.2 + 0.2,
+        alpha: Math.random() * 0.6 + 0.1,
+        speed: Math.random() * 0.4 + 0.1,
+        phase: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+
+  let t = 0;
+  function drawStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    t += 0.008;
+    for (const s of stars) {
+      const a = s.alpha * (0.6 + 0.4 * Math.sin(t * s.speed + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200,210,255,${a})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(drawStars);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  drawStars();
+})();
+
+
+/* ════════════════════════════════════════════
+   GLOBE
+════════════════════════════════════════════ */
+(function initGlobe() {
+  const canvas = document.getElementById('globe');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
+  const R = W / 2 - 2;
+
+  // Continent blobs [x%, y%, rx%, ry%, rotation-deg, color]
+  const continents = [
+    [-0.25, -0.12, 0.22, 0.18,  15, '#2e7d32'],
+    [ 0.05, -0.28, 0.14, 0.12, -10, '#388e3c'],
+    [ 0.30, -0.05, 0.20, 0.22,  25, '#2e7d32'],
+    [-0.10,  0.18, 0.18, 0.14,  -5, '#1b5e20'],
+    [ 0.45, -0.18, 0.10, 0.28,  40, '#33691e'],
+    [-0.38,  0.08, 0.16, 0.12,  10, '#2e7d32'],
+    [ 0.15,  0.30, 0.12, 0.10, -20, '#388e3c'],
+    [-0.12, -0.38, 0.09, 0.08,   5, '#33691e'],
+  ];
+
+  let frame = 0;
+
+  function drawGlobe() {
+    ctx.clearRect(0, 0, W, H);
+
+    // ── Outer atmosphere glow
+    const atmo = ctx.createRadialGradient(cx, cy, R * 0.85, cx, cy, R + 18);
+    atmo.addColorStop(0, 'rgba(50,120,255,0)');
+    atmo.addColorStop(1, 'rgba(50,120,255,0.18)');
+    ctx.beginPath();
+    ctx.arc(cx, cy, R + 18, 0, Math.PI * 2);
+    ctx.fillStyle = atmo;
+    ctx.fill();
+
+    // ── Ocean base
+    const ocean = ctx.createRadialGradient(cx - R * 0.25, cy - R * 0.25, R * 0.05, cx, cy, R);
+    ocean.addColorStop(0.0, '#2979ff');
+    ocean.addColorStop(0.35, '#1565c0');
+    ocean.addColorStop(0.75, '#0d3b8e');
+    ocean.addColorStop(1.0,  '#061a4a');
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fillStyle = ocean;
+    ctx.fill();
+
+    // ── Continents (clipped to sphere, moving)
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.clip();
+
+    const speed  = 0.35;
+    const offset = (frame * speed) % (W * 1.5);
+
+    for (let shift = -W * 1.5; shift <= W * 1.5; shift += W * 1.5) {
+      for (const [px, py, prx, pry, rot, color] of continents) {
+        const bx = cx + px * W + shift - offset;
+        const by = cy + py * H;
+        const brx = prx * W;
+        const bry = pry * H;
+
+        ctx.save();
+        ctx.translate(bx, by);
+        ctx.rotate((rot * Math.PI) / 180);
+        ctx.globalAlpha = 0.72;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, brx, bry, 0, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    ctx.restore();
+    ctx.globalAlpha = 1;
+
+    // ── Cloud wisps (translucent white streaks)
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.clip();
+
+    const cloudOffset = (frame * 0.5) % (W * 1.5);
+    const clouds = [
+      [-0.4, -0.08, 0.35, 0.06],
+      [ 0.1,  0.22, 0.28, 0.05],
+      [-0.15, -0.30, 0.20, 0.04],
+      [ 0.35,  0.05, 0.22, 0.05],
+    ];
+
+    for (let shift = -W * 1.5; shift <= W * 1.5; shift += W * 1.5) {
+      for (const [px, py, prx, pry] of clouds) {
+        const bx = cx + px * W + shift - cloudOffset;
+        const by = cy + py * H;
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        ctx.beginPath();
+        ctx.ellipse(bx, by, prx * W, pry * H, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    ctx.restore();
+    ctx.globalAlpha = 1;
+
+    // ── Specular highlight top-left
+    const spec = ctx.createRadialGradient(cx - R * 0.42, cy - R * 0.42, 0, cx - R * 0.25, cy - R * 0.25, R * 0.85);
+    spec.addColorStop(0,   'rgba(255,255,255,0.18)');
+    spec.addColorStop(0.4, 'rgba(255,255,255,0.05)');
+    spec.addColorStop(1,   'rgba(255,255,255,0)');
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fillStyle = spec;
+    ctx.fill();
+
+    // ── Edge darkening (3D curvature illusion)
+    const edge = ctx.createRadialGradient(cx, cy, R * 0.65, cx, cy, R);
+    edge.addColorStop(0, 'rgba(0,0,12,0)');
+    edge.addColorStop(1, 'rgba(0,0,12,0.7)');
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fillStyle = edge;
+    ctx.fill();
+
+    frame++;
+    requestAnimationFrame(drawGlobe);
+  }
+
+  drawGlobe();
+})();
+
+
+/* ════════════════════════════════════════════
+   FILTER CHIPS — toggle
+════════════════════════════════════════════ */
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('active');
+    applyFilters();
+  });
+});
+
+function getActiveFilters() {
+  const filters = { mood: [], coreSkills: [], experience: [] };
+  document.querySelectorAll('[data-group]').forEach(group => {
+    const key = group.dataset.group;
+    group.querySelectorAll('.chip.active').forEach(c => {
+      filters[key].push(c.dataset.val);
+    });
+  });
+  return filters;
+}
+
+function applyFilters() {
+  const filters = getActiveFilters();
+  let visible = 0;
+  document.querySelectorAll('.card').forEach(card => {
+    const mood       = card.dataset.mood;
+    const experience = card.dataset.experience;
+    const coreRaw    = card.dataset.coreSkills || '';
+    const core       = coreRaw.split(',').map(s => s.trim());
+
+    const moodOk  = filters.mood.length === 0 || filters.mood.includes(mood);
+    const expOk   = filters.experience.length === 0 || filters.experience.includes(experience);
+    const coreOk  = filters.coreSkills.length === 0 || filters.coreSkills.some(f => core.includes(f));
+
+    const show = moodOk && expOk && coreOk;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+}
+
+
+/* ════════════════════════════════════════════
+   MOCK DATA — profile cards
+   (Replace with fetch('/api/v1/dashboard') in production)
+════════════════════════════════════════════ */
+const MOCK_USERS = [
+  {
+    id: '1',
+    firstName: 'Alex',
+    lastName: 'Rivera',
+    username: 'alexrivera',
+    mood: 'PART_TIME',
+    experience: 'SENIOR',
+    coreSkills: ['Cloud', 'Back end'],
+    stackSkills: ['Node.js', 'AWS', 'Terraform'],
+    portfolio: 'https://alexrivera.dev',
+    github: 'https://github.com',
+    linkedIn: 'https://linkedin.com',
+    discord: 'alexrivera#0001',
+    online: true,
+  },
+  {
+    id: '2',
+    firstName: 'Sana',
+    lastName: 'Ito',
+    username: 'sanaito_',
+    mood: 'FULL_TIME',
+    experience: 'MID_LEVEL',
+    coreSkills: ['Front end'],
+    stackSkills: ['React', 'TypeScript', 'Figma'],
+    portfolio: 'https://sanaito.me',
+    github: 'https://github.com',
+    linkedIn: 'https://linkedin.com',
+    discord: null,
+    online: true,
+  },
+  {
+    id: '3',
+    firstName: 'Marcus',
+    lastName: 'Osei',
+    username: 'marcus_builds',
+    mood: 'FREELANCE',
+    experience: 'EXPERT',
+    coreSkills: ['ML', 'Data'],
+    stackSkills: ['Python', 'PyTorch', 'Spark'],
+    portfolio: null,
+    github: 'https://github.com',
+    linkedIn: 'https://linkedin.com',
+    discord: 'marcus#2049',
+    online: false,
+  },
+  {
+    id: '4',
+    firstName: 'Priya',
+    lastName: 'Nair',
+    username: 'priya_nair',
+    mood: 'FULL_TIME',
+    experience: 'JUNIOR',
+    coreSkills: ['Front end', 'Full stack'],
+    stackSkills: ['Vue', 'Firebase', 'Tailwind'],
+    portfolio: 'https://priyanair.io',
+    github: 'https://github.com',
+    linkedIn: 'https://linkedin.com',
+    discord: 'priya#7732',
+    online: true,
+  },
+  {
+    id: '5',
+    firstName: 'Leo',
+    lastName: 'Park',
+    username: 'leo_codes',
+    mood: 'PART_TIME',
+    experience: 'SENIOR',
+    coreSkills: ['Cloud', 'DevOps'],
+    stackSkills: ['Kubernetes', 'Go', 'GCP'],
+    portfolio: null,
+    github: 'https://github.com',
+    linkedIn: 'https://linkedin.com',
+    discord: null,
+    online: false,
+  },
+];
+
+const MOOD_LABEL = { FULL_TIME: 'Full-time', PART_TIME: 'Part-time', FREELANCE: 'Freelance' };
+const EXP_LABEL  = { JUNIOR: 'Junior', MID_LEVEL: 'Mid-level', SENIOR: 'Senior', EXPERT: 'Expert' };
+
+function userAvatar(u) {
+  if (u.profilePictureThumbnailUrl) {
+    return `<img src="${u.profilePictureThumbnailUrl}" alt="${u.firstName}" loading="lazy">`;
+  }
+  return `
+    <div class="avatar-placeholder">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+    </div>`;
+}
+
+function buildCard(u) {
+  const coreStr = (u.coreSkills || []).join(', ');
+
+  const coreTags  = (u.coreSkills  || []).map(s => `<span class="tag">${s}</span>`).join('');
+  const stackTags = (u.stackSkills || []).map(s => `<span class="tag">${s}</span>`).join('');
+
+  const portfolioHtml = u.portfolio
+    ? `<div class="card-section">
+         <div class="section-label">Portfolio</div>
+         <a class="portfolio-link" href="${u.portfolio}" target="_blank" rel="noopener">
+           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+           ${u.portfolio.replace(/^https?:\/\//, '')}
+         </a>
+       </div>`
+    : '';
+
+  const socials = [];
+  if (u.github)   socials.push(`<a class="social-btn gh" href="${u.github}" target="_blank" rel="noopener" title="GitHub">GH</a>`);
+  if (u.linkedIn) socials.push(`<a class="social-btn li" href="${u.linkedIn}" target="_blank" rel="noopener" title="LinkedIn">in</a>`);
+  if (u.discord)  socials.push(`<a class="social-btn dc" href="#" title="Discord: ${u.discord}">Dc</a>`);
+
+  return `
+  <div class="card"
+    data-mood="${u.mood}"
+    data-experience="${u.experience}"
+    data-core-skills="${coreStr}"
+    id="card-${u.id}">
+
+    <div class="card-head">
+      <div class="avatar">${userAvatar(u)}</div>
+
+      <div class="card-identity">
+        <div class="card-name">${u.firstName} ${u.lastName}</div>
+        <div class="card-username">@${u.username}</div>
+      </div>
+
+      <div class="card-badges">
+        <div class="status-dot ${u.online ? 'online' : 'offline'}" title="${u.online ? 'Online' : 'Offline'}"></div>
+        <svg class="verified-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" title="Verified">
+          <path d="M12 1l2.4 4.9 5.4.8-3.9 3.8.9 5.3L12 13.4l-4.8 2.4.9-5.3L4.2 6.7l5.4-.8z"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card-meta">
+      <span class="meta-val">${MOOD_LABEL[u.mood]}</span>
+      <span class="meta-dot"></span>
+      <span class="meta-val">${EXP_LABEL[u.experience]}</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card-section">
+      <div class="section-label">Skills</div>
+      ${coreTags  ? `<div class="skill-row"><span class="skill-row-label">Core</span><div class="tags">${coreTags}</div></div>` : ''}
+      ${stackTags ? `<div class="skill-row"><span class="skill-row-label">Stack</span><div class="tags">${stackTags}</div></div>` : ''}
+    </div>
+
+    ${portfolioHtml}
+
+    ${socials.length ? `
+    <div class="card-section">
+      <div class="section-label">Socials</div>
+      <div class="socials">${socials.join('')}</div>
+    </div>` : ''}
+
+  </div>`;
+}
+
+function renderCards(users) {
+  const panel = document.getElementById('cardsPanel');
+  panel.innerHTML = users.map(buildCard).join('');
+  applyFilters();
+}
+
+// ── Simulate async load (swap for real fetch in production)
+// fetch('/api/v1/dashboard')
+//   .then(r => r.json())
+//   .then(d => renderCards(d.users))
+//   .catch(console.error);
+
+setTimeout(() => renderCards(MOCK_USERS), 400);
+</script>
+</body>
+</html>

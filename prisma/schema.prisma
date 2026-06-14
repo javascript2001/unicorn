@@ -42,9 +42,11 @@ model User {
   linkedIn  String
   github    String
   portfolio String?
-  skills    String[]
+  coreSkills  String[]
+  stackSkills String[]
   experience Experience
   mood      MOOD
+  discord   String?
   isVerified Boolean  @default(false)
   isBanned    Boolean  @default(false)
   profilePictureUrl String?
