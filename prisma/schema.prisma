@@ -42,8 +42,7 @@ model User {
   linkedIn  String
   github    String
   portfolio String?
-  coreSkills  String[]
-  stackSkills String[]
+  skills String[]
   experience Experience
   mood      MOOD
   discord   String?

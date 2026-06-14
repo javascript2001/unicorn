@@ -1,28 +1,534 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Unicorn — Find Your Next Opportunity</title>
-  <meta name="description" content="Unicorn is a platform connecting developers with opportunities. Showcase your skills, experience, and availability to top companies." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unicorn — Real-time Tech Connect</title>
+<meta name="description" content="Discover and connect with developers worldwide. Find the right talent, collaborate, and build together on Unicorn.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:       #09090f;
+  --surface:  #111118;
+  --surface2: #18181f;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.13);
+  --accent:   #e91e8c;
+  --accent2:  #7c3aed;
+  --text:     #e8e8f2;
+  --text2:    #7a7a96;
+  --text3:    #3a3a52;
+  --radius:   14px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* ── Nav ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 16px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s, background 0.3s, backdrop-filter 0.3s;
+}
+nav.scrolled {
+  border-color: var(--border);
+  background: rgba(9,9,15,0.85);
+  backdrop-filter: blur(16px);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.nav-logo-icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-logo-text {
+  font-size: 1.05rem; font-weight: 700;
+  letter-spacing: -0.02em; color: #fff;
+}
+
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a { font-size: 0.85rem; color: var(--text2); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); }
+
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+
+.btn {
+  padding: 9px 20px;
+  border-radius: 999px;
+  font-family: inherit; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none;
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+}
+.btn-ghost:hover { color: var(--text); background: var(--surface2); }
+.btn-primary {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(233,30,140,0.25);
+}
+.btn-primary:hover { background: #d41880; box-shadow: 0 0 30px rgba(233,30,140,0.4); transform: translateY(-1px); }
+.btn-lg { padding: 13px 28px; font-size: 0.9rem; }
+
+/* ── Hero ── */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  position: relative; overflow: hidden;
+  padding: 120px 48px 80px;
+}
+
+canvas#particles {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+}
+
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 70% 50%, rgba(124,58,237,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 20%, rgba(233,30,140,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero-content { position: relative; z-index: 2; max-width: 620px; }
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 14px; border-radius: 999px;
+  border: 1px solid rgba(233,30,140,0.3);
+  background: rgba(233,30,140,0.08);
+  font-size: 0.72rem; font-weight: 600;
+  color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.blink-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 8px rgba(233,30,140,0.8);
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.hero-title {
+  font-size: clamp(2.8rem, 5.5vw, 4.2rem);
+  font-weight: 700; line-height: 1.08;
+  letter-spacing: -0.03em; margin-bottom: 24px;
+}
+.grad {
+  background: linear-gradient(135deg, #fff 0%, rgba(233,30,140,0.9) 50%, rgba(124,58,237,0.9) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 1rem; color: var(--text2);
+  line-height: 1.7; max-width: 480px; margin-bottom: 40px;
+}
+
+.hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.hero-stats { display: flex; gap: 36px; margin-top: 60px; }
+.stat-num { font-size: 1.5rem; font-weight: 700; color: #fff; }
+.stat-lbl { font-size: 0.73rem; color: var(--text2); margin-top: 2px; }
+
+/* ── Shared section ── */
+section { padding: 100px 48px; position: relative; }
+.eyebrow {
+  display: inline-block;
+  font-size: 0.7rem; font-weight: 600; color: var(--accent);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px;
+}
+.sec-title {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 16px;
+}
+.sec-sub { font-size: 0.93rem; color: var(--text2); line-height: 1.7; max-width: 520px; }
+hr.sep { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+/* ── Features ── */
+.features { background: var(--surface); }
+.feat-head { text-align: center; margin-bottom: 64px; }
+.feat-head .sec-sub { margin: 0 auto; }
+
+.feat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px; max-width: 1100px; margin: 0 auto;
+}
+
+.feat-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 30px 26px;
+  transition: border-color 0.25s, transform 0.25s;
+  position: relative; overflow: hidden;
+}
+.feat-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.feat-card:hover { border-color: rgba(233,30,140,0.25); transform: translateY(-3px); }
+.feat-card:hover::after { opacity: 1; }
+
+.feat-icon {
+  width: 42px; height: 42px; border-radius: 11px;
+  background: rgba(233,30,140,0.1);
+  border: 1px solid rgba(233,30,140,0.2);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px; color: var(--accent);
+}
+.feat-title { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 10px; }
+.feat-desc  { font-size: 0.8rem; color: var(--text2); line-height: 1.7; }
+
+/* ── How it works ── */
+.how-inner { max-width: 1100px; margin: 0 auto; }
+.steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 40px; margin-top: 60px; position: relative;
+}
+.steps::before {
+  content: '';
+  position: absolute; top: 28px;
+  left: calc(16.66% + 20px); right: calc(16.66% + 20px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), rgba(124,58,237,0.5));
+  opacity: 0.3;
+}
+.step { text-align: center; }
+.step-num {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 700; color: var(--accent);
+  margin: 0 auto 24px; position: relative; z-index: 1;
+}
+.step-title { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 10px; }
+.step-desc  { font-size: 0.8rem; color: var(--text2); line-height: 1.65; }
+
+/* ── CTA ── */
+.cta-sec {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  overflow: hidden;
+}
+.cta-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 20% 50%, rgba(233,30,140,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 80% at 80% 50%, rgba(124,58,237,0.06) 0%, transparent 70%);
+}
+.cta-inner { position: relative; text-align: center; }
+.cta-inner .sec-sub { margin: 0 auto 40px; }
+.cta-inner .hero-cta { justify-content: center; }
+
+/* ── Footer ── */
+footer {
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: 36px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 20px;
+}
+.copy { font-size: 0.76rem; color: var(--text3); }
+.footer-links { display: flex; gap: 24px; list-style: none; }
+.footer-links a { font-size: 0.76rem; color: var(--text2); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+
+@media (max-width: 900px) {
+  nav { padding: 16px 20px; }
+  .nav-links { display: none; }
+  .hero, section { padding-left: 20px; padding-right: 20px; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; gap: 28px; }
+  .steps::before { display: none; }
+  footer { padding: 28px 20px; }
+}
+</style>
 </head>
 <body>
-  <div id="app">
-    <!-- Rendered by router.js -->
+
+<nav id="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2L2 19h20L12 2z" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M12 10v3" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="nav-logo-text">unicorn</span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="/dashboard.html">Dashboard</a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <a href="/dashboard.html" class="btn btn-ghost">Sign in</a>
+    <a href="/dashboard.html" class="btn btn-primary">Get started</a>
   </div>
+</nav>
 
-  <!-- Toast container -->
-  <div id="toast-container"></div>
-
-  <!-- Page loader -->
-  <div id="page-loader" class="page-loader">
-    <div class="loader-ring"></div>
+<!-- Hero -->
+<div class="hero" id="home">
+  <canvas id="particles"></canvas>
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="blink-dot"></span>
+      Now in beta
+    </div>
+    <h1 class="hero-title">
+      Connect with<br>
+      <span class="grad">world-class<br>developers</span>
+    </h1>
+    <p class="hero-sub">
+      Unicorn is the real-time discovery platform for developers.
+      Filter by skill, experience, and availability — then connect directly.
+    </p>
+    <div class="hero-cta">
+      <a href="/dashboard.html" class="btn btn-primary btn-lg">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Start discovering
+      </a>
+      <a href="#how" class="btn btn-ghost btn-lg">How it works</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="stat-num">1.2k+</div><div class="stat-lbl">Developers</div></div>
+      <div><div class="stat-num">40+</div><div class="stat-lbl">Skills indexed</div></div>
+      <div><div class="stat-num">Real-time</div><div class="stat-lbl">Online status</div></div>
+    </div>
   </div>
+</div>
 
-  <script src="/app.js" type="module"></script>
+<hr class="sep">
+
+<!-- Features -->
+<section class="features" id="features">
+  <div class="feat-head">
+    <span class="eyebrow">What you get</span>
+    <h2 class="sec-title">Built for how<br>developers actually work</h2>
+    <p class="sec-sub">No noise. Just the people and skills you need, surfaced the moment you need them.</p>
+  </div>
+  <div class="feat-grid">
+
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </div>
+      <h3 class="feat-title">Smart Discovery</h3>
+      <p class="feat-desc">Filter developers by core skills, tech stack, experience level, and availability. Surface exactly who you need — instantly.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <h3 class="feat-title">Rich Profiles</h3>
+      <p class="feat-desc">Every profile shows GitHub, LinkedIn, portfolio, core domain, and stack — everything you need to evaluate at a glance.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <h3 class="feat-title">Live Status</h3>
+      <p class="feat-desc">Know who is available right now. Real-time online status means you reach developers when they are actually there to respond.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </div>
+      <h3 class="feat-title">Experience Tiers</h3>
+      <p class="feat-desc">Filter from Junior to Expert. Find the right fit for your project's scope and budget — every time.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/>
+          <path d="M8 21h8M12 17v4"/>
+        </svg>
+      </div>
+      <h3 class="feat-title">Work Modes</h3>
+      <p class="feat-desc">Full-time, part-time, or freelance — every developer declares how they work. Match your project needs to their availability.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <h3 class="feat-title">Verified Profiles</h3>
+      <p class="feat-desc">Every account is email-verified before appearing in the feed. No bots. No ghost accounts. Real people, real skills.</p>
+    </div>
+
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- How it works -->
+<section id="how">
+  <div class="how-inner">
+    <div>
+      <span class="eyebrow">How it works</span>
+      <h2 class="sec-title">Up and running<br>in minutes</h2>
+      <p class="sec-sub">No long forms. No gatekeeping. Build your profile and start connecting today.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3 class="step-title">Create your profile</h3>
+        <p class="step-desc">Register with your email, fill in your skills, stack, experience, and social links. Takes less than two minutes.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3 class="step-title">Browse the feed</h3>
+        <p class="step-desc">Open the dashboard and scroll through developer cards. Filter by mood, skills, or experience — or search by name.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3 class="step-title">Connect directly</h3>
+        <p class="step-desc">Every card shows GitHub, LinkedIn, and Discord. Click through and start the conversation immediately.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- CTA -->
+<section class="cta-sec">
+  <div class="cta-bg"></div>
+  <div class="cta-inner">
+    <span class="eyebrow">Join the platform</span>
+    <h2 class="sec-title">Your next collaborator<br>is already here</h2>
+    <p class="sec-sub">Thousands of developers are already on Unicorn. It takes two minutes to join them.</p>
+    <div class="hero-cta">
+      <a href="/dashboard.html" class="btn btn-primary btn-lg">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Get started — it's free
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <span class="copy">2026 Unicorn. All rights reserved.</span>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">GitHub</a></li>
+  </ul>
+</footer>
+
+<script>
+/* Nav scroll */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 40), { passive: true });
+
+/* Particle network */
+(function() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, pts;
+  const N = 55, DIST = 130;
+  const P = [233,30,140], V = [124,58,237];
+  const mix = t => [P[0]+(V[0]-P[0])*t|0, P[1]+(V[1]-P[1])*t|0, P[2]+(V[2]-P[2])*t|0];
+
+  function init() {
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+    pts = Array.from({length: N}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      vx: (Math.random()-.5)*.4, vy: (Math.random()-.5)*.4,
+      r: Math.random()*1.4+.6
+    }));
+  }
+
+  function frame() {
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p => {
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>W) p.vx*=-1;
+      if(p.y<0||p.y>H) p.vy*=-1;
+    });
+    for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++) {
+      const d = Math.hypot(pts[i].x-pts[j].x, pts[i].y-pts[j].y);
+      if(d<DIST) {
+        const [r,g,b] = mix(d/DIST);
+        ctx.beginPath();
+        ctx.moveTo(pts[i].x, pts[i].y);
+        ctx.lineTo(pts[j].x, pts[j].y);
+        ctx.strokeStyle = `rgba(${r},${g},${b},${(1-d/DIST)*.18})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+    pts.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(233,30,140,.5)';
+      ctx.fill();
+    });
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', init, {passive:true});
+  init(); frame();
+})();
+</script>
 </body>
 </html>
