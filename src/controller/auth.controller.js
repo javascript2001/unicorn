@@ -21,8 +21,7 @@ const register_schema = z.object({
     github: z.string().url(),
     portfolio: z.string().url().optional(),
     discord: z.string().optional(),
-    coreSkills: z.array(z.string()),
-    stackSkills: z.array(z.string()),
+    skills: z.array(z.string()),
     experience: z.enum(["JUNIOR", "MID_LEVEL", "SENIOR", "EXPERT"]),
     mood: z.enum(["PART_TIME", "FULL_TIME", "FREELANCE"]),
 })
