@@ -24,7 +24,7 @@ const send_mail = async (tomail, token, baseurl) => {
   }
   try {
     const info = await transporter.sendMail({
-      from: '"Verify Your Account" <otpverify1979@gmail.com>',
+      from: '"Verify Your Account"',
       to: tomail,
       subject: "Verify your email",
       text: `${baseurl}?token=${token}`, // plain‑text body
@@ -42,7 +42,7 @@ const send_verify_success_mail = async (tomail) => {
   }
   try {
     const info = await transporter.sendMail({
-      from: '"Account Verified Successfully" <otpverify1979@gmail.com>',
+      from: '"Account Verified Successfully"',
       to: tomail,
       subject: "Account Verified Successfully",
       text: "Your account has been verified successfully.",
