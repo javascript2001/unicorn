@@ -30,9 +30,21 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/settings', settingsRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
 
-app.use("*", (req,res) => {
+app.get('/', (req,res) => {
+  res.status(200).json({
+    success: true,
+    message: "ALl ok"
+  })
+})
+app.get('/health', (req,res) => {
+  res.status(200).json({
+    success: true,
+    message: "Health is OK"
+  })
+})
+app.use((req,res) => {
   res.status(404).json({
-    status: false,
+    success: false,
     message: "Resource Not found"
   })
 })
