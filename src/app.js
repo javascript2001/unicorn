@@ -23,18 +23,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static frontend files
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // API routes
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/settings', settingsRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
 
-// SPA fallback — serve index.html for all non-API routes
-app.get('/:catchAll', (req, res) => {
-  // Don't intercept API routes
-  if (req.path.startsWith('/api/')) return res.status(404).json({ success: false, message: 'Route not found' });
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
-});
+app.use("*", (req,res) => {
+  res.status(404).json({
+    status: false,
+    message: "Resource Not found"
+  })
+})
 
 export {app}
