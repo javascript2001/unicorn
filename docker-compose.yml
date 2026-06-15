@@ -32,5 +32,4 @@ services:
     depends_on:
       valkey :
         condition: service_healthy
-    working_dir: ./src/worker
-    command: ["node", "worker.js"]
+    command: ["node", "src/worker/worker.js"]
