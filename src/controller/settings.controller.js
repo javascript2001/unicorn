@@ -86,6 +86,7 @@ const get_profile_controller = async (req, res) => {
         return res.status(200).json({
             success: true,
             user: safeUser,
+            message: "User details fetched"
         });
     } catch (err) {
         console.log('Error in get_profile_controller :', err);

@@ -26,7 +26,7 @@ const dashboard_controller = async (req, res) => {
         const skip  = (page - 1) * limit;
 
         // --- Filters ---
-        const { experience, mood, coreSkills, stackSkills, search } = req.query;
+        const { experience, mood } = req.query;
 
         // Base where — always exclude self, banned users, unverified users
         const where = {
@@ -59,34 +59,7 @@ const dashboard_controller = async (req, res) => {
             where.mood = mood;
         }
 
-        // coreSkills filter — comma-separated e.g. ?coreSkills=Frontend,Backend
-        // matches users who have ANY of the provided core skills
-        if (coreSkills) {
-            const skillList = coreSkills.split(',').map(s => s.trim()).filter(Boolean);
-            if (skillList.length) {
-                where.coreSkills = { hasSome: skillList };
-            }
-        }
 
-        // stackSkills filter — comma-separated e.g. ?stackSkills=React,Node.js
-        if (stackSkills) {
-            const skillList = stackSkills.split(',').map(s => s.trim()).filter(Boolean);
-            if (skillList.length) {
-                where.stackSkills = { hasSome: skillList };
-            }
-        }
-
-        // search — matches username, firstName, or lastName (case-insensitive)
-        if (search && search.trim()) {
-            const term = search.trim();
-            where.OR = [
-                { username:  { contains: term, mode: 'insensitive' } },
-                { firstName: { contains: term, mode: 'insensitive' } },
-                { lastName:  { contains: term, mode: 'insensitive' } },
-            ];
-        }
-
-        // --- Query ---
         const [users, total] = await Promise.all([
             prisma.user.findMany({
                 where,

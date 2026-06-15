@@ -20,7 +20,7 @@ const register_schema = z.object({
     linkedIn: z.string().url(),
     github: z.string().url(),
     portfolio: z.string().url().optional(),
-    discord: z.string().optional(),
+    discord: z.string().url().optional(),
     skills: z.array(z.string()),
     experience: z.enum(["JUNIOR", "MID_LEVEL", "SENIOR", "EXPERT"]),
     mood: z.enum(["PART_TIME", "FULL_TIME", "FREELANCE"]),
@@ -61,7 +61,10 @@ const register_controller = async (req, res) => {
         })
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         console.log(`I am token :${token}`);
-        res.status(201).json({ success: true, message: 'User registered successfully' });
+        res.status(201).json({ 
+            success: true, 
+            message: 'User registered successfully' 
+        });
         await verifyMailQueue.add('verify-mail-queue', { token: token, mail: result.data.mail });
         console.log("new mail added in queue");
     } catch (err) {
@@ -224,42 +227,41 @@ const profilePicture_controller = async (req, res) => {
     }
     const file_path = path.resolve(req.file.path);
     try {
-     const client = new ImageKit({
-        privateKey: process.env.IMG_KIT_PRIVAET_KEY
-     });
-     const uplaod_img = await client.files.upload({
-        file: fs.createReadStream(file_path),
-        fileName: req.file.filename
-     });
-     if (uplaod_img.url && uplaod_img.thumbnailUrl) {
-     const user = await prisma.user.update({
-        where: {
-            id: req.userId
-        }, data: {
-            profilePictureUrl: uplaod_img.url,
-            profilePictureThumbnailUrl: uplaod_img.thumbnailUrl
-        }
-     })
-    //  delete user.password;
-     if (fs.existsSync(file_path)) {
-        fs.unlinkSync(file_path);
-     }
-     return res.status(200).json({
-        success: true,
-        message: "Profile picture uploaded successfully",
-        profilePictureUrl: uplaod_img.url,
-        profilePictureThumbnailUrl: uplaod_img.thumbnailUrl
-     })
-    } else {
-        if (fs.existsSync(file_path)) {
-        fs.unlinkSync(file_path);
-    }
-        console.log("Error in uploading image to imagekit");
-        return res.status(500).json({
-            success: false,
-            message: "Error in uploading image to imagekit"
+        const client = new ImageKit({
+            privateKey: process.env.IMG_KIT_PRIVAET_KEY
         });
-    }
+        const uplaod_img = await client.files.upload({
+            file: fs.createReadStream(file_path),
+            fileName: req.file.filename
+        });
+        if (uplaod_img.url && uplaod_img.thumbnailUrl) {
+            const user = await prisma.user.update({
+                where: {
+                    id: req.userId
+                }, data: {
+                    profilePictureUrl: uplaod_img.url,
+                    profilePictureThumbnailUrl: uplaod_img.thumbnailUrl
+                }
+            })
+            if (fs.existsSync(file_path)) {
+                fs.unlinkSync(file_path);
+            }
+            return res.status(200).json({
+                success: true,
+                message: "Profile picture uploaded successfully",
+                profilePictureUrl: uplaod_img.url,
+                profilePictureThumbnailUrl: uplaod_img.thumbnailUrl
+            })
+        } else {
+            if (fs.existsSync(file_path)) {
+                fs.unlinkSync(file_path);
+            }
+            console.log("Error in uploading image to imagekit");
+            return res.status(500).json({
+                success: false,
+                message: "Error in uploading image to imagekit"
+            });
+        }
     } catch (err) {
         if (fs.existsSync(file_path)) {
             fs.unlinkSync(file_path);
