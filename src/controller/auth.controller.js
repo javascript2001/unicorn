@@ -276,4 +276,16 @@ const profilePicture_controller = async (req, res) => {
 
 }
 
-export { register_controller, login_controller, verify_controller, resend_verification_controller, logout_controller, profilePicture_controller };
+
+const forgot_password_controller = async () => {
+
+}
+
+const reset_password_controller = async () => {
+
+}
+const enable2fa_controller = async () => {
+
+}
+
+export { register_controller, login_controller, verify_controller, resend_verification_controller, logout_controller, profilePicture_controller, forgot_password_controller, reset_password_controller, enable2fa_controller };
