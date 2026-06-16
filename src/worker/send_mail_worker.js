@@ -5,7 +5,7 @@ import {redisConnection} from '../redis/conncetion.js'
 const send_mail_worker = new Worker('verify-mail-queue', async (job) => {
     // if (job.name === 'verify-mail') {
         const { token, mail } = job.data;
-        const baseurl = "http://localhost:3000/api/v1/auth/verify";
+        const baseurl = process.env.MAIL_VERIFY_BASE_URL;
         console.log("sending mail to :", mail);
         await send_mail(mail, token, baseurl);
         console.log("mail sent to :", mail);

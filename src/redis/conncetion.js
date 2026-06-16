@@ -1,13 +1,12 @@
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({
+        path: '../../.env'
+});
 import { Redis } from "ioredis"
 
 export const redisConnection = new Redis({
-        host: "localhost",
+        host: "valkey",
         port: 6379
-},
-{
+},{
         maxRetriesPerRequest: null,
-        // host: "",
-        // port: 6379,
 });
