@@ -4,10 +4,16 @@ import z, { success } from "zod";
 import { prisma } from '../../prismaConfig.js'
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { verifyMailQueue, verifySuccessQueue } from '../queue/queue.js';
+import { verifyMailQueue, verifySuccessQueue, forgotPasswordQueue, passwordChangeQueue, twoFactorEnableDisableQueue, sendOtpQueue } from '../queue/queue.js';
 import fs from 'fs'
 import ImageKit from '@imagekit/nodejs'
 import path from 'path';
+import { Redis } from "ioredis"
+import {redisConnection} from '../redis/conncetion.js'
+
+const redis = new Redis({connection: redisConnection});
+
+const __dirname =  import.meta.dirname;
 
 const register_schema = z.object({
     firstName: z.string(),
@@ -131,7 +137,16 @@ const login_controller = async (req, res) => {
                 message: 'Your account has been banned.'
             });
         }
-
+        if (user.isTwoFactorEnabled) {
+            const otp = Math.floor(100000 + Math.random() * 900000);
+            await redis.setex(`otp:${user.mail}`, 600, otp); // Store OTP in Redis with a 10-minute expiration
+            console.log(`Generated OTP for ${user.mail}: ${otp}`);
+            await sendOtpQueue.add('send-otp-queue', { mail: user.mail, otp: otp });
+            return res.status(200).json({
+                success: true,
+                message: 'OTP sent to your email. Please verify to complete login.',
+            });
+        }
         delete user.password;
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
         res.cookie('token', token, { httpOnly: true });
@@ -276,16 +291,244 @@ const profilePicture_controller = async (req, res) => {
 
 }
 
+const forgot_password_request_schema = z.object({
+    mail: z.string().email()
+})
 
-const forgot_password_controller = async () => {
+const forgot_password_requests_controller = async (req, res) => {
+    const { mail } = req.body;
+    if (!mail) {
+        return res.status(400).json({
+            success: false,
+            message: "Email is required"
+        })
+    }
+    const result = forgot_password_request_schema.safeParse(req.body);
+    if (!result.success) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid mail format"
+        })
+    }
+    if (!result.data.mail) {
+        return res.status(400).json({
+            success: false,
+            message: "Email is required"
+        })
+    }
+
+    try {
+        const user = await prisma.user.findUnique({ where: { mail: result.data.mail } });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { forgotPasswordToken: token }
+        });
+        await forgotPasswordQueue.add('forgot-password-queue', { token: token, mail: result.data.mail });
+        console.log("I am forgot password token : ", token);
+        return res.status(200).json({
+            success: true,
+            message: "Forgot password mail sent successfully"
+        })
+    }catch (err) {
+        clog('Error in forgot password request controller :', err);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error: err
+        })
+    }
+}
+const reset_password_request_schema = z.object({
+    oldPassword: z.string(),
+    newPassword: z.string()
+})
+
+const reset_password_controller = async (req, res) => {
+const result = reset_password_request_schema.safeParse(req.body);
+if (!result.success) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid request body",
+        error: result.error.errors
+    })
+}
+try{
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: "User not found"
+        });
+    }
+    const isPasswordValid = await bcrypt.compare(result.data.oldPassword, user.password);
+    if (!isPasswordValid) {
+        return res.status(401).json({
+            success: false,
+            message: 'Invalid Old Password'
+        });
+    }
+    const hashedPassword = await bcrypt.hash(result.data.newPassword, 10);
+    await prisma.user.update({
+        where: { id: req.userId },
+        data: { password: hashedPassword }  
+    });
+    await passwordChangeQueue.add('change-password-queue', { mail: user.mail });
+    return res.status(200).json({
+        success: true,
+        message: "Password changed successfully"
+    })
+
+} catch (err) {
+    console.log('Error in reset password controller :', err);
+    return res.status(500).json({
+        success: false,
+        message: "Something went wrong",
+        error: err
+    })
+}
+}
+const enable_disable_2fa_controller = async (req, res) => {
+    try {
+        const user = await prisma.user.findUnique({ where: { id: req.userId } });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        const newStatus = !user.isTwoFactorEnabled;
+        await prisma.user.update({
+            where: { id: req.userId },
+            data: { isTwoFactorEnabled: newStatus }
+        });
+        await twoFactorEnableDisableQueue.add('enable-disable-queue', { mail: user.mail, status: newStatus ? "enabled" : "disabled" });
+        return res.status(200).json({
+            success: true,
+            message: `2FA ${newStatus ? "enabled" : "disabled"} successfully`
+        })
+    } catch (err) {
+        console.log('Error in enable/disable 2FA controller :', err);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error: err
+        })
+    }
 
 }
 
-const reset_password_controller = async () => {
-
-}
-const enable2fa_controller = async () => {
-
+const send_forgot_password_static_file_controller = async (req, res) => {
+    return res.sendFile(path.join(__dirname, ".." , "..",'public', 'forgotpassword.html'));
 }
 
-export { register_controller, login_controller, verify_controller, resend_verification_controller, logout_controller, profilePicture_controller, forgot_password_controller, reset_password_controller, enable2fa_controller };
+const forgot_password_schema = z.object({
+    token: z.string(),
+    newPassword: z.string()
+})
+
+const forgot_password_controller = async (req, res) => {
+        const result = forgot_password_schema.safeParse(req.body);
+        if (!result.success) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid request body",
+                error: result.error.errors
+            })
+        }
+        try {
+            const decoded = jwt.verify(result.data.token, process.env.JWT_SECRET);
+            const userId = decoded.userId;
+            const user = await prisma.user.findUnique({ where: { id: userId } });
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found"
+                });
+            }
+            if (user.forgotPasswordToken !== result.data.token) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid token"
+                });
+            }
+            const hashedPassword = await bcrypt.hash(result.data.newPassword, 10);
+            await prisma.user.update({
+                where: { id: userId },
+                data: { password: hashedPassword, forgotPasswordToken: null }
+            });
+            await passwordChangeQueue.add('change-password-queue', { mail: user.mail });
+            return res.status(200).json({
+                success: true,
+                message: "Password changed successfully"
+            })
+        } catch (err) {
+            console.log('Error in forgot password controller :', err);
+            return res.status(500).json({
+                success: false,
+                message: "Something went wrong",
+                error: err
+            })
+        }
+}
+
+
+const login_2fa_schema = z.object({
+    mail: z.string().email(),
+    otp: z.string()
+})
+
+
+const login_2fa_controller = async (req, res) => {
+    const result = login_2fa_schema.safeParse(req.body);
+    if (!result.success) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid request body",
+            error: result.error.errors
+        })
+    }
+    try {
+        const user = await prisma.user.findUnique({ where: { mail: result.data.mail } });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        const storedOtp = await redis.get(`otp:${result.data.mail}`);
+        if (!storedOtp) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP has expired or is invalid"
+            });
+        }
+        if (storedOtp !== result.data.otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP"
+            });
+        }
+        await redis.del(`otp:${result.data.mail}`); // Delete OTP after successful verification
+        delete user.password;
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+        res.cookie('token', token, { httpOnly: true });
+        res.status(200).json({ success: true, message: 'Login successful', user: user });
+    } catch (err) {
+        console.log('Error in login 2FA controller :', err);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error: err
+        })
+    }
+}
+
+
+export { register_controller, login_controller, verify_controller, resend_verification_controller, logout_controller, profilePicture_controller, forgot_password_requests_controller, reset_password_controller, enable_disable_2fa_controller, send_forgot_password_static_file_controller, forgot_password_controller, login_2fa_controller };

@@ -50,6 +50,8 @@ model User {
   isBanned    Boolean  @default(false)
   profilePictureUrl String?
   profilePictureThumbnailUrl String?
+  forgotPasswordToken String?
+  isTwoFactorEnabled Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

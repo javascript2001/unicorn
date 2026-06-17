@@ -5,7 +5,7 @@ dotenv.config({
 import { Redis } from "ioredis"
 
 export const redisConnection = new Redis({
-        host: "valkey",
+        host: "localhost",
         port: 6379
 },{
         maxRetriesPerRequest: null,
