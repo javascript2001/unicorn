@@ -7,6 +7,7 @@ import { Redis } from "ioredis"
 export const redisConnection = new Redis({
         host: "valkey",
         port: 6379
-},{
-        maxRetriesPerRequest: null,
+},
+{
+        maxRetriesPerRequest: null
 });
