@@ -11,3 +11,8 @@ export const redisConnection = new Redis({
 {
         maxRetriesPerRequest: null
 });
+
+export const redisOption = {
+        host: "valkey",
+        port: 6379
+}

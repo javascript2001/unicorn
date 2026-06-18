@@ -8,7 +8,7 @@ import {Redis} from 'ioredis';
 import { redisConnection } from '../redis/conncetion.js'
 
 
-const redis = new Redis({connection: redisConnection});
+const redis = new Redis();
 
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
@@ -112,7 +112,7 @@ const enable_disable_2fa_mail = async (tomail, status) => {
 
 const send_otp_mail = async (tomail, otp) => {
   if (!tomail || !otp) {
-    return new Error("sender mail and otp are required")
+    throw new Error("sender mail and otp are required")
   }
   try {
     const info = await transporter.sendMail({

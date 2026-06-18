@@ -9,11 +9,13 @@ import fs from 'fs'
 import ImageKit from '@imagekit/nodejs'
 import path from 'path';
 import { Redis } from "ioredis"
-import {redisConnection} from '../redis/conncetion.js'
+import { redisConnection, redisOption } from '../redis/conncetion.js'
+import { use } from 'react';
 
-const redis = new Redis({connection: redisConnection});
 
-const __dirname =  import.meta.dirname;
+const redis = new Redis(redisOption);
+
+const __dirname = import.meta.dirname;
 
 const register_schema = z.object({
     firstName: z.string(),
@@ -67,9 +69,9 @@ const register_controller = async (req, res) => {
         })
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         console.log(`I am token :${token}`);
-        res.status(201).json({ 
-            success: true, 
-            message: 'User registered successfully' 
+        res.status(201).json({
+            success: true,
+            message: 'User registered successfully'
         });
         await verifyMailQueue.add('verify-mail-queue', { token: token, mail: result.data.mail });
         console.log("new mail added in queue");
@@ -336,7 +338,7 @@ const forgot_password_requests_controller = async (req, res) => {
             success: true,
             message: "Forgot password mail sent successfully"
         })
-    }catch (err) {
+    } catch (err) {
         clog('Error in forgot password request controller :', err);
         return res.status(500).json({
             success: false,
@@ -351,48 +353,48 @@ const reset_password_request_schema = z.object({
 })
 
 const reset_password_controller = async (req, res) => {
-const result = reset_password_request_schema.safeParse(req.body);
-if (!result.success) {
-    return res.status(400).json({
-        success: false,
-        message: "Invalid request body",
-        error: result.error.errors
-    })
-}
-try{
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user) {
-        return res.status(404).json({
+    const result = reset_password_request_schema.safeParse(req.body);
+    if (!result.success) {
+        return res.status(400).json({
             success: false,
-            message: "User not found"
-        });
+            message: "Invalid request body",
+            error: result.error.errors
+        })
     }
-    const isPasswordValid = await bcrypt.compare(result.data.oldPassword, user.password);
-    if (!isPasswordValid) {
-        return res.status(401).json({
-            success: false,
-            message: 'Invalid Old Password'
+    try {
+        const user = await prisma.user.findUnique({ where: { id: req.userId } });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        const isPasswordValid = await bcrypt.compare(result.data.oldPassword, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid Old Password'
+            });
+        }
+        const hashedPassword = await bcrypt.hash(result.data.newPassword, 10);
+        await prisma.user.update({
+            where: { id: req.userId },
+            data: { password: hashedPassword }
         });
-    }
-    const hashedPassword = await bcrypt.hash(result.data.newPassword, 10);
-    await prisma.user.update({
-        where: { id: req.userId },
-        data: { password: hashedPassword }  
-    });
-    await passwordChangeQueue.add('change-password-queue', { mail: user.mail });
-    return res.status(200).json({
-        success: true,
-        message: "Password changed successfully"
-    })
+        await passwordChangeQueue.add('change-password-queue', { mail: user.mail });
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully"
+        })
 
-} catch (err) {
-    console.log('Error in reset password controller :', err);
-    return res.status(500).json({
-        success: false,
-        message: "Something went wrong",
-        error: err
-    })
-}
+    } catch (err) {
+        console.log('Error in reset password controller :', err);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error: err
+        })
+    }
 }
 const enable_disable_2fa_controller = async (req, res) => {
     try {
@@ -425,7 +427,7 @@ const enable_disable_2fa_controller = async (req, res) => {
 }
 
 const send_forgot_password_static_file_controller = async (req, res) => {
-    return res.sendFile(path.join(__dirname, ".." , "..",'public', 'forgotpassword.html'));
+    return res.sendFile(path.join(__dirname, "..", "..", 'public', 'forgotpassword.html'));
 }
 
 const forgot_password_schema = z.object({
@@ -434,48 +436,48 @@ const forgot_password_schema = z.object({
 })
 
 const forgot_password_controller = async (req, res) => {
-        const result = forgot_password_schema.safeParse(req.body);
-        if (!result.success) {
+    const result = forgot_password_schema.safeParse(req.body);
+    if (!result.success) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid request body",
+            error: result.error.errors
+        })
+    }
+    try {
+        const decoded = jwt.verify(result.data.token, process.env.JWT_SECRET);
+        const userId = decoded.userId;
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        if (user.forgotPasswordToken !== result.data.token) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid request body",
-                error: result.error.errors
-            })
-        }
-        try {
-            const decoded = jwt.verify(result.data.token, process.env.JWT_SECRET);
-            const userId = decoded.userId;
-            const user = await prisma.user.findUnique({ where: { id: userId } });
-            if (!user) {
-                return res.status(404).json({
-                    success: false,
-                    message: "User not found"
-                });
-            }
-            if (user.forgotPasswordToken !== result.data.token) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid token"
-                });
-            }
-            const hashedPassword = await bcrypt.hash(result.data.newPassword, 10);
-            await prisma.user.update({
-                where: { id: userId },
-                data: { password: hashedPassword, forgotPasswordToken: null }
+                message: "Invalid token"
             });
-            await passwordChangeQueue.add('change-password-queue', { mail: user.mail });
-            return res.status(200).json({
-                success: true,
-                message: "Password changed successfully"
-            })
-        } catch (err) {
-            console.log('Error in forgot password controller :', err);
-            return res.status(500).json({
-                success: false,
-                message: "Something went wrong",
-                error: err
-            })
         }
+        const hashedPassword = await bcrypt.hash(result.data.newPassword, 10);
+        await prisma.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword, forgotPasswordToken: null }
+        });
+        await passwordChangeQueue.add('change-password-queue', { mail: user.mail });
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully"
+        })
+    } catch (err) {
+        console.log('Error in forgot password controller :', err);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error: err
+        })
+    }
 }
 
 
@@ -502,11 +504,22 @@ const login_2fa_controller = async (req, res) => {
                 message: "User not found"
             });
         }
-        const storedOtp = await redis.get(`otp:${result.data.mail}`);
-        if (!storedOtp) {
+        if (!user.isTwoFactorEnabled) {
             return res.status(400).json({
                 success: false,
-                message: "OTP has expired or is invalid"
+                message: "2FA is not enabled for this user"
+            });
+        }
+        if (!user.isVerified) {
+            return res.status(400).json({
+                success: false,
+                message: "Please Verify you mail before login"
+            })
+        }
+        if (user.isBanned) {
+            return res.status(403).json({
+                success: false,
+                message: 'Your account has been banned.'
             });
         }
         if (storedOtp !== result.data.otp) {
@@ -515,6 +528,13 @@ const login_2fa_controller = async (req, res) => {
                 message: "Invalid OTP"
             });
         }
+        if (user.mail !== result.data.mail) {
+            return res.status(400).json({
+                success: false,
+                message: "Email does not match with user"
+            });
+        }
+
         await redis.del(`otp:${result.data.mail}`); // Delete OTP after successful verification
         delete user.password;
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -531,4 +551,66 @@ const login_2fa_controller = async (req, res) => {
 }
 
 
-export { register_controller, login_controller, verify_controller, resend_verification_controller, logout_controller, profilePicture_controller, forgot_password_requests_controller, reset_password_controller, enable_disable_2fa_controller, send_forgot_password_static_file_controller, forgot_password_controller, login_2fa_controller };
+const resend_otp_controller = async (req, res) => {
+    const { mail } = req.body;
+    if (!mail) {
+        return res.status(400).json({
+            success: false,
+            message: "Email is required"
+        })
+    }
+    try {
+        const user = await prisma.user.findUnique({ where: { mail: mail } });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        if (!user.isTwoFactorEnabled) {
+            return res.status(400).json({
+                success: false,
+                message: "2FA is not enabled for this user"
+            });
+        }
+        if (user.isBanned) {
+            return res.status(403).json({
+                success: false,
+                message: 'Your account has been banned.'
+            });
+        }
+        if (user.isVerified) {
+            if (user.mail !== mail) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Email does not match with user"
+                });
+            }
+            if (await redis.get(`otp:${user.mail}`)) {
+                await sendOtpQueue.add('send-otp-queue', { mail: user.mail, otp: otp });
+                return res.status(200).json({
+                    success: true,
+                    message: "OTP already sent. Please check your email."
+                });
+            }
+            const otp = Math.floor(100000 + Math.random() * 900000);
+            await redis.setex(`otp:${user.mail}`, 600, otp); // Store OTP in Redis with a 10-minute expiration
+            console.log(`Generated OTP for ${user.mail}: ${otp}`);
+            await sendOtpQueue.add('send-otp-queue', { mail: user.mail, otp: otp });
+            return res.status(200).json({
+                success: true,
+                message: 'OTP resent to your email. Please verify to complete login.',
+            });
+        }
+
+    } catch (err) {
+        console.log('Error in resend OTP controller :', err);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error: err
+        })
+    }
+}
+
+export { register_controller, login_controller, verify_controller, resend_verification_controller, logout_controller, profilePicture_controller, forgot_password_requests_controller, reset_password_controller, enable_disable_2fa_controller, send_forgot_password_static_file_controller, forgot_password_controller, login_2fa_controller, resend_otp_controller };

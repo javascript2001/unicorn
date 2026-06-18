@@ -123,7 +123,7 @@ const send_otp_mail_worker = new Worker('send-otp-queue', async (job) => {
             console.log("Job data is required to send OTP mail.");
             return;
         }
-    const { mail } = job.data;
+    const { mail, otp } = job.data;
     console.log("Sending OTP mail to :", mail);
     await send_otp_mail(mail);
     console.log("OTP mail sent to :", mail);
